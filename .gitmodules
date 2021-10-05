@@ -1,3 +1,6 @@
 [submodule "libwebsockets"]
 	path = libwebsockets
 	url = https://github.com/warmcat/libwebsockets.git
+[submodule "docker-kinesis-agent"]
+	path = docker-kinesis-agent
+	url = https://github.com/coryodaniel/docker-kinesis-agent.git
