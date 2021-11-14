@@ -24,13 +24,24 @@ class PriceInfo(object):
             "timestamp" : timestamp       
         }
 
-    def process_raw_data(self, exchange:str, topic:str, data):
+    def verify_str_is_json(self, data:str):
+        length = len(data)
+        if length < 3:
+            return False
+        if data[0] != '{' or data[length - 2] != '}' or data[length - 1] != '\n':
+            return False
+        return True
+
+    def process_raw_data(self, exchange:str, topic:str, data:str):
+        if not self.verify_str_is_json(data):
+            return []
+
         json_data = {}
         try:
             json_data = str_to_json(data)
         except Exception as ex:
             self.log.create("ERROR", str(ex))
-            return(None)
+            return []
 
         if EX_BYBIT         == exchange:        return PriceBybit().process_json_data(topic=topic, json_data=json_data)
         if EX_BYBIT_USDT    == exchange:        return PriceBybitUSDT().process_json_data(topic=topic, json_data=json_data)
@@ -38,7 +49,7 @@ class PriceInfo(object):
         if EX_BINANCE       == exchange:        return PriceBinance().process_json_data(topic=topic, json_data=json_data)
 
         self.log.create("ERROR", f'{exchange} EXCHANGE NOT SUPPOTED')
-        return None
+        return []
 
 if __name__ == '__main__':
     info = PriceInfo()
