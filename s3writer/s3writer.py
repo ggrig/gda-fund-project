@@ -6,7 +6,7 @@ import uuid
 
 from dotenv import load_dotenv
 from osbot_utils.utils.Files import file_exists
-from osbot_utils.utils.Json import str_to_json
+from osbot_utils.utils.Json import str_to_json, json_to_str
 from datetime import datetime
 from datetime import timezone
 
@@ -70,10 +70,13 @@ def s3_bucket_folders(data, _symbol, year, month, day):
 
 def s3_bucket_raw_data_folders(topic, year, month, day):
     return f'raw-data/exchange={exchange}/{topic}/year={str(year)}/month={str(month)}/day={str(day)}/'
+def s3_bucket_normalized_folders(topic, year, month, day):
+    return f'normalized/exchange={exchange}/{topic}/year={str(year)}/month={str(month)}/day={str(day)}/'
 
 class s3writer(object):
     def __init__(self):
         self.raw_lines = ''
+        self.normalized_lines = ''
         self.number_of_lines = 0
         self.old_flush_timestamp = 0
         self.mutex = Lock()
@@ -91,25 +94,24 @@ class s3writer(object):
             pass
         return line
 
-    def submit_line_to_opensearch(self, line):
+    def get_normalized_lines(self, line):
         global price_index
 
         try:
             price_data = self.priceinfo.process_raw_data(exchange=exchange, topic=topic, data=line)
             for item in price_data:
                 if 'timestamp' in item:
-                    # price_index.add_document(document=item, timestamp=item['timestamp'])
+                    self.normalized_lines += json_to_str(item)
                     price_index.add_document(document=item)
         except Exception as ex:
             print(ex)
 
     def process_raw_line(self, line):
-        self.submit_line_to_opensearch(line)
-
         self.mutex.acquire()
         try:
             self.raw_lines = self.raw_lines + line
             self.number_of_lines += 1
+            self.get_normalized_lines(line)
         finally:
             self.mutex.release()
 
@@ -157,11 +159,17 @@ class s3writer(object):
             if self.raw_lines:
                 s3.Bucket(bucket_name).put_object(Key=f'{folders}{seq}', Body=self.raw_lines)
 
+            folders = s3_bucket_normalized_folders(topic, year, month, day)
+            if self.normalized_lines:
+                s3.Bucket(bucket_name).put_object(Key=f'{folders}{seq}', Body=self.normalized_lines)
+
             period = math.floor((utc_timestamp - self.old_flush_timestamp) * 1000)
             self.verify_feed_frequency(seq, period)
             self.old_flush_timestamp = utc_timestamp
 
             self.raw_lines = ''
+            self.normalized_lines = ''
+
             self.number_of_lines = 0
         finally:
             self.mutex.release()
