@@ -99,12 +99,9 @@ class s3writer(object):
         try:
             price_data = self.priceinfo.process_raw_data(exchange=exchange, topic=topic, data=line)
             for item in price_data:
-                if 'timestamp' in item:
-                    self.normalized_lines += json_to_str(item, indent=0, pretty=False)
-                    self.normalized_lines += '\n'
-                    price_index.add_document(document=item)
-            # print('self.normalized_lines')
-            # print(self.normalized_lines)
+                self.normalized_lines += json_to_str(item, indent=0, pretty=False)
+                self.normalized_lines += '\n'
+                price_index.add_document(document=item)
         except Exception as ex:
             print(ex)
 
