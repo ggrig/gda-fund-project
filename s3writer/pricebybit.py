@@ -71,6 +71,43 @@ class PriceBybit(PriceBase):
 
         return True
 
+    def add_lob_action_data(self, json_data, lob_action_name:str, ):
+        retval = []
+
+        lob_actions = json_data['data'][lob_action_name]
+        order_id = json_data['cross_seq']
+        timestamp = int(json_data["timestamp_e6"]) / 1e3
+
+        for entry in lob_actions:
+            symbol  = entry["symbol"]
+            price   = float(entry["price"])
+
+            event = {
+            'event_timestamp': datetime.datetime.fromtimestamp(timestamp / 1e3).isoformat(),
+            'event_no': entry['id'],
+            'quote_no': entry['id'],
+            'end_of_event': False,
+            'side': entry['side'],
+            'lob_action': lob_action_name,
+            'original_order_id': order_id,
+            'order_id': order_id,
+            'size': 0,
+            'old_size': 0,
+            'price': float(entry["price"]),
+            'old_price': 0,
+            'order_executed': False,
+            'executed_size': 0,
+            'order_type': 1,
+            'time_in_force': 0
+            }
+
+            if 'size' in entry:
+                event['size'] = entry['size']
+
+            retval.append(event)
+
+        return retval
+
 
     def process_json_data(self, topic:str, json_data):
         retval = []
@@ -85,42 +122,9 @@ class PriceBybit(PriceBase):
                 retval.append(self.getJson(symbol=symbol, price=price, timestamp=timestamp))
         elif TOPIC_BYBIT_OB200      == topic and self.verify_ob200_structure(json_data):
 
-            timestamp = int(json_data["timestamp_e6"]) / 1e3
-
-            lob_action_name = 'insert'
-            lob_actions = json_data['data'][lob_action_name]
-
-            order_id = json_data['cross_seq']
-
-            for entry in lob_actions:
-                symbol  = entry["symbol"]
-                price   = float(entry["price"])
-
-                event = {
-                'event_timestamp': datetime.datetime.fromtimestamp(timestamp / 1e3).isoformat(),
-                'event_no': entry['id'],
-                'quote_no': entry['id'],
-                'end_of_event': False,
-                'side': entry['side'],
-                'lob_action': lob_action_name,
-                'original_order_id': order_id,
-                'order_id': order_id,
-                'size': 0,
-                'old_size': 0,
-                'price': float(entry["price"]),
-                'old_price': 0,
-                'order_executed': False,
-                'executed_size': 0,
-                'order_type': 1,
-                'time_in_force': 0
-                }
-
-                if 'size' in entry:
-                    event['size'] = entry['size']
-               
-                retval.append(event)
-
-                # retval.append(self.getJson(symbol=symbol, price=price, timestamp=timestamp))
+            retval += self.add_lob_action_data(json_data, 'delete')
+            retval += self.add_lob_action_data(json_data, 'insert')
+            retval += self.add_lob_action_data(json_data, 'update')
 
         elif TOPIC_BYBIT_TRADE      == topic and self.verify_trade_structure(json_data):
             data = json_data['data']
