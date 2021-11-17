@@ -85,7 +85,7 @@ class PriceBybit(PriceBase):
             'quote_no': entry['id'],
             'end_of_event': False,
             'side': entry['side'],
-            'lob_action': lob_action_name,
+            'lob_action': self.get_lob_action_index(lob_action_name),
             'original_order_id': order_id,
             'order_id': order_id,
             'size': 0,

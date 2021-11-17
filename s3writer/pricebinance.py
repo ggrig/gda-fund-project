@@ -39,10 +39,7 @@ class PriceBinance(PriceBase):
         retval = []
 
         if TOPIC_BINANCE_BINANCE    == topic and self.verify_btcusdt_structure(json_data):
-            symbol      = json_data["data"]["s"]
-            price       = float(json_data["data"]["p"])
-            timestamp   = int(json_data["data"]["E"])
-            retval.append(self.getJson(symbol=symbol, price=price, timestamp=timestamp))
+            return retval
 
         return retval
 
