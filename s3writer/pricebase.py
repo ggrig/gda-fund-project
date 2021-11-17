@@ -12,9 +12,20 @@ class PriceBase(object):
             'delete'    : 3,
             'update'    : 4
         }
+        self.side_index_dictionalry = {
+            'bid'       : 1,
+            'Buy'       : 1,
+            'ask'       : 2,
+            'Sell'      : 2
+        }
 
 
     def get_lob_action_index(self, action:str):
         if not action in self.lob_action_dictionary:
             return 0
         return self.lob_action_dictionary[action]
+
+    def get_side_index(self, side:str):
+        if not side in self.side_index_dictionalry:
+            return 0
+        return self.side_index_dictionalry[side]
