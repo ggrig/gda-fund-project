@@ -3,6 +3,10 @@ from log_json import log_json
 from osbot_utils.utils.Json import str_to_json
 
 class PriceBase(object):
+    ORDER_TYPE_UNKNOWN  = 0
+    ORDER_TYPE_LIMIT    = 1
+    ORDER_TYPE_MARKET   = 2
+
     def __init__(self):
         self.log = log_json()
         self.lob_action_dictionary = {

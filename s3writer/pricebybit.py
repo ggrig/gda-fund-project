@@ -94,7 +94,7 @@ class PriceBybit(PriceBase):
             'old_price': 0,
             'order_executed': False,
             'executed_size': 0,
-            'order_type': 1,
+            'order_type': self.ORDER_TYPE_LIMIT,
             'time_in_force': 0
             }
 
@@ -122,9 +122,9 @@ class PriceBybit(PriceBase):
             'old_size': 0,
             'price': float(entry["price"]),
             'old_price': 0,
-            'order_executed': False,
+            'order_executed': True,
             'executed_size': 0,
-            'order_type': 1,
+            'order_type': self.ORDER_TYPE_MARKET,
             'time_in_force': 0
             }
 
