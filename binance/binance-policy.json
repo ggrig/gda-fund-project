@@ -22,10 +22,10 @@
 	],
 	"s": [
 		{ "binance": {
-			"endpoint":		"fstream.binance.com",
-			"port":			443,
+			"endpoint":		"stream.binance.com",
+			"port":			9443,
 			"protocol":		"ws",
-			"http_url":		"/stream?streams=btcusdt@depth@0ms/btcusdt@bookTicker/btcusdt@aggTrade",
+			"http_url":		"/ws",
 			"nailed_up":        	true,
 			"ws_prioritize_reads":	true,
 			"tls":			true,

@@ -83,8 +83,7 @@ sul_hz_cb(lws_sorted_usec_list_t *sul)
 	g->pos = 0;
 	g->payload = g->msg;
 	g->size = (size_t)lws_snprintf(g->msg, sizeof(g->msg),
-					"{\"method\": \"SUBSCRIBE\",\"params\": [\"%s\"],"id": 1}",topic);
-
+					"{\"method\": \"SUBSCRIBE\",\"params\": [\"%s\"],\"id\": 1}",topic);
 
 	if (lws_ss_request_tx_len(lws_ss_from_user(g), (unsigned long)g->size))
 		lwsl_notice("%s: req failed\n", __func__);
@@ -190,6 +189,6 @@ binance_state(void *userobj, void *h_src, lws_ss_constate_t state,
 
 LWS_SS_INFO("binance", binance_t)
 	.rx	      = binance_rx,
-    .tx       = binance-tx,
+    .tx       = binance_tx,
 	.state    = binance_state,
 };
