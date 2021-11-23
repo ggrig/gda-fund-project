@@ -23,7 +23,7 @@
 	"s": [
 		{ "binance": {
 			"endpoint":		"stream.binance.com",
-			"port":			9443,
+			"port":			443,
 			"protocol":		"ws",
 			"http_url":		"/ws",
 			"nailed_up":        	true,
