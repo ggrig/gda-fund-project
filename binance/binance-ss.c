@@ -21,6 +21,7 @@
  * possible to put the policy json in the code as a string and pass that at
  * context creation time.
  */
+#define _GNU_SOURCE
 
 #include <libwebsockets.h>
 #include <string.h>
@@ -28,12 +29,14 @@
 #include <ctype.h>
 
 #include <stdio.h>
+#include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 extern int test_result;
+extern char topic[64];
 extern char fifo[64];
 int fifo_descriptor = -1;
 
@@ -50,16 +53,14 @@ LWS_SS_USER_TYPEDEF
 
 	range_t			e_lat_range;
 	range_t			price_range;
+
+	char			msg[64];
+	const char		*payload;
+	size_t			size;
+	size_t			pos;
+
+	int			count;
 } binance_t;
-
-
-static void
-range_reset(range_t *r)
-{
-	r->sum = r->highest = 0;
-	r->lowest = 999999999999ull;
-	r->samples = 0;
-}
 
 static uint64_t
 get_us_timeofday(void)
@@ -72,23 +73,21 @@ get_us_timeofday(void)
 			  (uint64_t)tv.tv_usec;
 }
 
-static uint64_t
-pennies(const char *s)
-{
-	uint64_t price = (uint64_t)atoll(s) * 100;
-
-	s = strchr(s, '.');
-
-	if (s && isdigit(s[1]) && isdigit(s[2]))
-		price = price + (uint64_t)((10 * (s[1] - '0')) + (s[2] - '0'));
-
-	return price;
-}
-
 static void
 sul_hz_cb(lws_sorted_usec_list_t *sul)
 {
 	binance_t *bin = lws_container_of(sul, binance_t, sul_hz);
+	binance_t *g = bin;
+
+	// /* provide a hint about the payload size */
+	g->pos = 0;
+	g->payload = g->msg;
+	g->size = (size_t)lws_snprintf(g->msg, sizeof(g->msg),
+					"{\"method\": \"SUBSCRIBE\",\"params\": [\"%s\"],"id": 1}",topic);
+
+
+	if (lws_ss_request_tx_len(lws_ss_from_user(g), (unsigned long)g->size))
+		lwsl_notice("%s: req failed\n", __func__);
 
 	/*
 	 * We are called once a second to dump statistics on the connection
@@ -96,11 +95,41 @@ sul_hz_cb(lws_sorted_usec_list_t *sul)
 
 	lws_sul_schedule(lws_ss_get_context(bin->ss), 0, &bin->sul_hz,
 			 sul_hz_cb, LWS_US_PER_SEC);
-
-	test_result = 0;
 }
 
+static lws_ss_state_return_t
+binance_tx(void *userobj, lws_ss_tx_ordinal_t ord, uint8_t *buf, size_t *len,
+	     int *flags)
+{
+	binance_t *bin = (binance_t *)userobj;
+	lws_ss_state_return_t r = LWSSSSRET_OK;
+	binance_t *g = bin;
 
+	lwsl_debug("binance_transfer_callback");
+
+	if (g->size == g->pos)
+		return LWSSSSRET_TX_DONT_SEND;
+
+	if (*len > g->size - g->pos)
+		*len = g->size - g->pos;
+
+	if (!g->pos)
+		*flags |= LWSSS_FLAG_SOM;
+
+	memcpy(buf, g->payload + g->pos, *len);
+	g->pos += *len;
+
+	if (g->pos != g->size)
+		/* more to do */
+		r = lws_ss_request_tx(lws_ss_from_user(g));
+	else
+		*flags |= LWSSS_FLAG_EOM;
+
+	lwsl_ss_user(lws_ss_from_user(g), "TX %zu, flags 0x%x, r %d", *len,
+					  (unsigned int)*flags, (int)r);
+
+	return r;
+}
 static lws_ss_state_return_t
 binance_rx(void *userobj, const uint8_t *in, size_t len, int flags)
 {
@@ -134,25 +163,22 @@ binance_state(void *userobj, void *h_src, lws_ss_constate_t state,
 	case LWSSSCS_CONNECTED:
 		lws_sul_schedule(lws_ss_get_context(bin->ss), 0, &bin->sul_hz,
 				 sul_hz_cb, LWS_US_PER_SEC);
-
 		mkfifo(fifo, 0666);
 		fifo_descriptor = open(fifo, O_WRONLY);
 		if (fifo_descriptor >= 0) // the fifo is valid
 		{
 			lwsl_debug("Pipe %s created",fifo);
 		}
-
 		return LWSSSSRET_OK;
 
 	case LWSSSCS_DISCONNECTED:
+		lws_sul_cancel(&bin->sul_hz);
 		if (fifo_descriptor >= 0) // the fifo is valid
 		{
 			close(fifo_descriptor);
 			fifo_descriptor = -1;
 			lwsl_debug("Pipe %s closed",fifo);
 		}
-
-		lws_sul_cancel(&bin->sul_hz);
 		break;
 
 	default:
@@ -164,5 +190,6 @@ binance_state(void *userobj, void *h_src, lws_ss_constate_t state,
 
 LWS_SS_INFO("binance", binance_t)
 	.rx	      = binance_rx,
+    .tx       = binance-tx,
 	.state    = binance_state,
 };
