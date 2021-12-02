@@ -1,71 +1,180 @@
 {
-    "requiresCompatibilities": [
-        "FARGATE"
-    ],
+    "ipcMode": null,
+    "executionRoleArn": "arn:aws:iam::381452754685:role/GdaAwsCdkStack-binancetradebtcusdtbinancetdtradeEx-11PXPIL95DF5A",
     "containerDefinitions": [
-        {
-            "name": "binance-us-west-1",
-            "image": "381452754685.dkr.ecr.us-west-1.amazonaws.com/binance02",
-            "memoryReservation": "128",
-            "resourceRequirements": null,
-            "essential": true,
-            "portMappings": [],
-            "environment": [
-                {
-                    "name": "EXCHANGE",
-                    "value": "Binance"
-                },
-                {
-                    "name": "C_BINARY_PATH",
-                    "value": "/app/lws-binance"
-                },
-                {
-                    "name": "TOPIC",
-                    "value": "binance"
-                },
-                {
-                    "name": "AWS_ACCESS_KEY_ID",
-                    "value": "AKIAVRUC3D36ZTP2LO7U"
-                },
-                {
-                    "name": "AWS_SECRET_ACCESS_KEY",
-                    "value": "****************************************"
-                },
-                {
-                    "name": "BUCKET_NAME",
-                    "value": "gda-data-lake-us-west-1"
-                }
-            ],            
-            "environmentFiles": [],
-            "secrets": null,
-            "mountPoints": null,
-            "volumesFrom": null,
-            "hostname": null,
-            "user": null,
-            "workingDirectory": null,
-            "extraHosts": null,
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/binance-us-west-1",
-                    "awslogs-region": "us-west-1",
-                    "awslogs-stream-prefix": "ecs"
-                }
-            },
-            "ulimits": null,
-            "dockerLabels": null,
-            "dependsOn": null,
-            "repositoryCredentials": {
-                "credentialsParameter": ""
-            }
-        }
+      {
+        "dnsSearchDomains": [],
+        "environmentFiles": [],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "secretOptions": [],
+          "options": {
+            "awslogs-group": "/ecs/binance-trade-btcusdt-log-group",
+            "awslogs-region": "us-west-1",
+            "awslogs-stream-prefix": "ecs"
+          }
+        },
+        "entryPoint": [],
+        "portMappings": [],
+        "command": [],
+        "linuxParameters": null,
+        "cpu": 0,
+        "environment": [
+          {
+            "name": "AWS_ACCESS_KEY_ID",
+            "value": "*******************************"
+          },
+          {
+            "name": "AWS_SECRET_ACCESS_KEY",
+            "value": "*******************************"
+          },
+          {
+            "name": "BUCKET_NAME",
+            "value": "gda-data-lake-us-west-1"
+          },
+          {
+            "name": "C_BINARY_PATH",
+            "value": "/app/lws-binance"
+          },
+          {
+            "name": "EXCHANGE",
+            "value": "Binance"
+          },
+          {
+            "name": "FEED_INTERVAL",
+            "value": "30000"
+          },
+          {
+            "name": "OPENSEARCH_HOST",
+            "value": "search-gdadatalake-3j64pumoaczj224srjngvx34wa.us-west-1.es.amazonaws.com"
+          },
+          {
+            "name": "OPENSEARCH_PASSWORD",
+            "value": "*******************************"
+          },
+          {
+            "name": "OPENSEARCH_PORT",
+            "value": "443"
+          },
+          {
+            "name": "OPENSEARCH_USER",
+            "value": "Master"
+          },
+          {
+            "name": "SYMBOL",
+            "value": "BTCUSDT"
+          },
+          {
+            "name": "TOPIC",
+            "value": "trade"
+          }
+        ],
+        "resourceRequirements": null,
+        "ulimits": [],
+        "dnsServers": [],
+        "mountPoints": [],
+        "workingDirectory": null,
+        "secrets": [],
+        "dockerSecurityOptions": [],
+        "memory": null,
+        "memoryReservation": null,
+        "volumesFrom": [],
+        "stopTimeout": null,
+        "image": "381452754685.dkr.ecr.us-west-1.amazonaws.com/binance:latest",
+        "startTimeout": null,
+        "firelensConfiguration": null,
+        "dependsOn": null,
+        "disableNetworking": null,
+        "interactive": null,
+        "healthCheck": null,
+        "essential": true,
+        "links": [],
+        "hostname": null,
+        "extraHosts": [],
+        "pseudoTerminal": null,
+        "user": null,
+        "readonlyRootFilesystem": null,
+        "dockerLabels": {},
+        "systemControls": [],
+        "privileged": null,
+        "name": "binance-trade-btcusdt-container"
+      }
     ],
-    "volumes": [],
-    "networkMode": "awsvpc",
+    "placementConstraints": [],
     "memory": "512",
+    "taskRoleArn": "arn:aws:iam::381452754685:role/GdaAwsCdkStack-binancetradebtcusdtbinancetdtradeTa-KC9TVLOL0PBO",
+    "compatibilities": [
+      "EC2",
+      "FARGATE"
+    ],
+    "taskDefinitionArn": "arn:aws:ecs:us-west-1:381452754685:task-definition/GdaAwsCdkStackbinancetradebtcusdtbinancetdtrade0C15D58C:1",
+    "family": "GdaAwsCdkStackbinancetradebtcusdtbinancetdtrade0C15D58C",
+    "requiresAttributes": [
+      {
+        "targetId": null,
+        "targetType": null,
+        "value": null,
+        "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+      },
+      {
+        "targetId": null,
+        "targetType": null,
+        "value": null,
+        "name": "ecs.capability.execution-role-awslogs"
+      },
+      {
+        "targetId": null,
+        "targetType": null,
+        "value": null,
+        "name": "com.amazonaws.ecs.capability.ecr-auth"
+      },
+      {
+        "targetId": null,
+        "targetType": null,
+        "value": null,
+        "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+      },
+      {
+        "targetId": null,
+        "targetType": null,
+        "value": null,
+        "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+      },
+      {
+        "targetId": null,
+        "targetType": null,
+        "value": null,
+        "name": "com.amazonaws.ecs.capability.task-iam-role"
+      },
+      {
+        "targetId": null,
+        "targetType": null,
+        "value": null,
+        "name": "ecs.capability.execution-role-ecr-pull"
+      },
+      {
+        "targetId": null,
+        "targetType": null,
+        "value": null,
+        "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+      },
+      {
+        "targetId": null,
+        "targetType": null,
+        "value": null,
+        "name": "ecs.capability.task-eni"
+      }
+    ],
+    "pidMode": null,
+    "requiresCompatibilities": [
+      "FARGATE"
+    ],
+    "networkMode": "awsvpc",
+    "runtimePlatform": null,
     "cpu": "256",
-    "executionRoleArn": "arn:aws:iam::381452754685:role/ecsTaskExecutionRole",
-    "family": "binance-us-west-1",
-    "taskRoleArn": "",
-    "tags": []
-}
+    "revision": 1,
+    "status": "ACTIVE",
+    "inferenceAccelerators": null,
+    "proxyConfiguration": null,
+    "volumes": []
+  }

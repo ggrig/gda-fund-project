@@ -39,6 +39,7 @@ extern int test_result;
 extern char topic[64];
 extern char fifo[64];
 int fifo_descriptor = -1;
+int read_counter = 0;
 
 typedef struct range {
 	uint64_t		sum;
@@ -147,6 +148,9 @@ bybit_receive_callback(void *userobj, const uint8_t *in, size_t len, int flags)
 	if (!p)
 		return LWSSSSRET_OK;
 
+	if (lws_json_simple_find((const char *)in, len, "\"snapshot\"", &alen))
+		lwsl_user("Snapshot at index %d", read_counter);
+
 	// lwsl_debug("%s", in);
 	if (fifo_descriptor >= 0) // the fifo is valid
 	{
@@ -167,6 +171,7 @@ bybit_receive_callback(void *userobj, const uint8_t *in, size_t len, int flags)
 
 		write(fifo_descriptor, in, strlen(in));
 		write(fifo_descriptor, "\n", 1);
+		read_counter += 1;
 
 	}
 
@@ -202,6 +207,8 @@ bybit_state(void *userobj, void *h_src, lws_ss_constate_t state,
 			close(fifo_descriptor);
 			fifo_descriptor = -1;
 			lwsl_debug("Pipe %s closed",fifo);
+			lwsl_user("Messages read %d", read_counter);
+			read_counter = 0;
 		}
 		break;
 
